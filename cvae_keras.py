@@ -22,16 +22,16 @@ from keras.datasets import mnist
 from keras.utils import to_categorical
 
 batch_size = 100
-original_dim = 784
-latent_dim = 2 # 隐变量取2维只是为了方便后面画图
-intermediate_dim = 256
+original_dim = 784  # 28*28的配比，代表了图片的像素点
+latent_dim = 2  # 隐变量取2维只是为了方便后面画图
+intermediate_dim = 256  # 是什么？
 epochs = 100
 epsilon_std = 1.0
 num_classes = 10
 
 # 加载MNIST数据集
 (x_train, y_train_), (x_test, y_test_) = mnist.load_data()
-x_train = x_train.astype('float32') / 255.
+x_train = x_train.astype('float32') / 255.  # 做RGB的转化
 x_test = x_test.astype('float32') / 255.
 x_train = x_train.reshape((len(x_train), np.prod(x_train.shape[1:])))
 x_test = x_test.reshape((len(x_test), np.prod(x_test.shape[1:])))
@@ -40,11 +40,11 @@ y_test = to_categorical(y_test_, num_classes)
 
 
 x = Input(shape=(original_dim,))
-h = Dense(intermediate_dim, activation='relu')(x)
+h = Dense(intermediate_dim, activation='relu')(x)  # 第一个隐藏层，以x为输入，降维到intermediate_dim维
 
 # 算p(Z|X)的均值和方差
-z_mean = Dense(latent_dim)(h)
-z_log_var = Dense(latent_dim)(h)
+z_mean = Dense(latent_dim)(h)  # 第二个隐藏层，降维到latent_dim维，计算分布均值
+z_log_var = Dense(latent_dim)(h)  # 并行的网路怎么组合？？
 
 y = Input(shape=(num_classes,)) # 输入类别
 yh = Dense(latent_dim)(y) # 这里就是直接构建每个类别的均值
@@ -63,7 +63,7 @@ z = Lambda(sampling, output_shape=(latent_dim,))([z_mean, z_log_var])
 decoder_h = Dense(intermediate_dim, activation='relu')
 decoder_mean = Dense(original_dim, activation='sigmoid')
 h_decoded = decoder_h(z)
-x_decoded_mean = decoder_mean(h_decoded)
+x_decoded_mean = decoder_mean(h_decoded)  # 估计的是每一个变量维度输出的均值
 
 # 建立模型
 vae = Model([x, y], [x_decoded_mean, yh])
